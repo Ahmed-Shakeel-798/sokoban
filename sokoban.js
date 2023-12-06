@@ -10,6 +10,7 @@ class SokobanSolver {
       board: this.board,
       player: this.findPlayerPosition(),
       path: [],
+      prevStates: [],
     };
 
     const queue = [initialState];
@@ -19,7 +20,10 @@ class SokobanSolver {
       const currentState = queue.shift();
 
       if (this.isGoalState(currentState)) {
-        return currentState.path;
+        return {
+          path: currentState.path,
+          states: currentState.prevStates, 
+        };
       }
 
       const hash = this.hashState(currentState);
@@ -81,16 +85,18 @@ class SokobanSolver {
 
             const newBoard = this.movePlayer(newBoardAfterBoxMovement, row, col, newRow, newCol);
             const newPath = [...state.path, dir];
+            const newPrevStates = [...state.prevStates, newBoard];
             const newPlayer = { row: newRow, col: newCol };
             
-            nextStates.push({ board: newBoard, player: newPlayer, path: newPath });
+            nextStates.push({ board: newBoard, player: newPlayer, path: newPath, prevStates: newPrevStates });
           }
         } else {
           const newBoard = this.movePlayer(state.board, row, col, newRow, newCol);
           const newPath = [...state.path, dir];
+          const newPrevStates = [...state.prevStates, newBoard];
           const newPlayer = { row: newRow, col: newCol };
 
-          nextStates.push({ board: newBoard, player: newPlayer, path: newPath });
+          nextStates.push({ board: newBoard, player: newPlayer, path: newPath, prevStates: newPrevStates });
         }
       }
     }
@@ -131,14 +137,22 @@ class SokobanSolver {
 
 // Example usage
 const board = [
-  ['W', 'W', 'W', 'T', 'W'],
-  ['W', '.', 'B', '.', 'W'],
-  ['W', '.', 'P', '.', 'W'],
-  ['W', '.', '.', '.', 'W'],
   ['W', 'W', 'W', 'W', 'W'],
+  ['W', '.', '.', '.', 'W'],
+  ['W', '.', 'B', '.', 'W'],
+  ['W', 'P', '.', '.', 'W'],
+  ['W', 'W', 'W', 'T', 'W'],
 ];
+console.log(board);
 
 const solver = new SokobanSolver(board);
-const solution = solver.solve();
+const solution = solver.solve();  // { path[], states[] }
 
-console.log(solution); // Array of moves (e.g., [{ row: -1, col: 0 }, { row: 0, col: 1 }, ...])
+if(!solution){
+  console.log("No solution was found for the given board.");
+}else{
+  for(const element in solution.states){
+    console.log(solution.path[element])
+    console.log(solution.states[element]);
+  }
+}
